@@ -1,0 +1,7 @@
+#+title: Readme
+This repository holds code I experiment with QML and quickshell.
+* Motivation
+I decided to rewrite my NixOS configuration, switching to the dendritic pattern and at the same time learning more about nix and flake parts.
+
+Part of this new desktop craze would include researching about quickshell and in the process I have to learn QML as well.
+
