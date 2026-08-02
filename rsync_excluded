@@ -10,4 +10,6 @@ rsync -r --exclude "flake.nix" \
     --exclude "README.md" \
     --exclude "flake.lock" \
     --exclude "rsync_excluded" \
+    --exclude ".gitignore" \
+    --exclude ".envrc" \
     ./* $1
