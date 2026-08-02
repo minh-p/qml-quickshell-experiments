@@ -6,13 +6,15 @@ import QtQuick
 import "clock"
 
 Scope {
+    id: bar
+    property bool barOn: true
     Variants {
         model: Quickshell.screens;
         PanelWindow {
-            id: bar
+            id: bar_monitor
             color: "transparent"
-            BackgroundEffect.blurRegion: Region { item: bar.contentItem }
-            visible: true
+            BackgroundEffect.blurRegion: Region { item: bar_monitor.contentItem }
+            visible: bar.barOn
             required property var modelData
             screen: modelData
             anchors {
@@ -25,5 +27,9 @@ Scope {
                 anchors.centerIn: parent
             }
         }
+    }
+    IpcHandler {
+        target: "bar"
+        function toggleBar(): void {bar.barOn = !bar.barOn}
     }
 }
