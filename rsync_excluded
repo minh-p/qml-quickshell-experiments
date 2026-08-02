@@ -5,11 +5,19 @@ if [ -z $1 ]; then
     exit
 fi
 
-rsync -r --exclude "flake.nix" \
-    --exclude ".direnv/" \
-    --exclude "README.md" \
-    --exclude "flake.lock" \
-    --exclude "rsync_excluded" \
-    --exclude ".gitignore" \
-    --exclude ".envrc" \
-    ./* $1
+read -p "This deletes everything in $1. Continue? [y/n] " yn
+case $yn in
+    [Yy]* )
+	rm -r $1/*; rsync -r --exclude "flake.nix" \
+	    --exclude ".direnv/" \
+	    --exclude "README.md" \
+	    --exclude "flake.lock" \
+	    --exclude "rsync_excluded" \
+	    --exclude ".gitignore" \
+	    --exclude ".envrc" \
+	    ./* $1; break;;
+    [Nn]* ) exit;;
+    * ) echo "Please answer yes or no.";;
+esac
+
+
