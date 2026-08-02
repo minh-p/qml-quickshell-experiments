@@ -11,22 +11,48 @@ Scope {
     id: root
 
     property bool launcherOpen: true
-    property string query: searchField.text.trim().toLowerCase()
+    property string query: ""
     property int selectedIndex: 0
-    property var applications: DesktopEntries.applications.values
-        .filter(function(app) {
-            return app && !app.noDisplay && app.name.length > 0;
-        })
-        .filter(function(app) {
-            return root.matchesQuery(app);
-        })
-        .sort(function(a, b) {
-            var scoreDiff = root.matchScore(b) - root.matchScore(a);
-            if (scoreDiff !== 0)
-                return scoreDiff;
+    property var applications: []
 
-            return a.name.localeCompare(b.name);
-        })
+    function lower(value) {
+        return value ? String(value).toLowerCase() : "";
+    }
+
+    function listText(value) {
+        if (!value)
+            return "";
+
+        if (typeof value.join === "function")
+            return value.join(" ").toLowerCase();
+
+        return String(value).toLowerCase();
+    }
+
+    function updateQuery(text) {
+        query = lower(text).trim();
+        selectedIndex = 0;
+        refreshApplications();
+    }
+
+    function refreshApplications() {
+        applications = (DesktopEntries.applications.values || [])
+            .filter(function(app) {
+                return app && !app.noDisplay && root.lower(app.name).length > 0;
+            })
+            .filter(function(app) {
+                return root.matchesQuery(app);
+            })
+            .sort(function(a, b) {
+                var scoreDiff = root.matchScore(b) - root.matchScore(a);
+                if (scoreDiff !== 0)
+                    return scoreDiff;
+
+                return a.name.localeCompare(b.name);
+            });
+
+        clampSelection();
+    }
 
     function matchesQuery(app) {
         if (query.length === 0)
@@ -37,12 +63,12 @@ Scope {
 
     function searchableText(app) {
         return [
-            app.name,
-            app.genericName,
-            app.comment,
-            app.execString,
-            app.categories.join(" "),
-            app.keywords.join(" ")
+            lower(app.name),
+            lower(app.genericName),
+            lower(app.comment),
+            lower(app.execString),
+            listText(app.categories),
+            listText(app.keywords)
         ].join(" ").toLowerCase();
     }
 
@@ -50,9 +76,10 @@ Scope {
         if (query.length === 0)
             return 0;
 
-        var name = app.name.toLowerCase();
-        var genericName = app.genericName.toLowerCase();
-        var exec = app.execString.toLowerCase();
+        var name = lower(app.name);
+        var genericName = lower(app.genericName);
+        var exec = lower(app.execString);
+        var keywords = listText(app.keywords);
 
         if (name === query)
             return 100;
@@ -62,7 +89,7 @@ Scope {
             return 60;
         if (name.indexOf(query) !== -1)
             return 40;
-        if (app.keywords.join(" ").toLowerCase().indexOf(query) !== -1)
+        if (keywords.indexOf(query) !== -1)
             return 30;
         if (exec.indexOf(query) !== -1)
             return 20;
@@ -99,7 +126,7 @@ Scope {
 
     function show() {
         launcherOpen = true;
-        searchField.forceActiveFocus();
+        Qt.callLater(function() { searchField.forceActiveFocus(); });
         clampSelection();
     }
 
@@ -116,7 +143,23 @@ Scope {
             show();
     }
 
-    onApplicationsChanged: clampSelection()
+    Component.onCompleted: refreshApplications()
+
+    Connections {
+        target: DesktopEntries
+
+        function onApplicationsChanged() {
+            root.refreshApplications();
+        }
+    }
+
+    Connections {
+        target: DesktopEntries.applications
+
+        function onValuesChanged() {
+            root.refreshApplications();
+        }
+    }
 
     IpcHandler {
         target: "launcher"
@@ -133,6 +176,7 @@ Scope {
         implicitWidth: Math.min(Math.max(720, screen.width * 0.34), screen.width - 48)
         implicitHeight: Math.min(560, screen.height - 96)
         color: "transparent"
+        WlrLayershell.keyboardFocus: root.launcherOpen ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
 
         BackgroundEffect.blurRegion: Region {
             item: launcher.contentItem
@@ -168,8 +212,7 @@ Scope {
                     rightPadding: 34
 
                     onTextChanged: {
-                        root.selectedIndex = 0;
-                        root.clampSelection();
+                        root.updateQuery(text);
                     }
 
                     Keys.onPressed: function(event) {
