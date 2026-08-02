@@ -8,7 +8,7 @@ import Quickshell.Widgets
 import Quickshell.Wayland
 
 Scope {
-    id: root
+    id: launcherController
 
     property bool launcherOpen: true
     property string query: ""
@@ -38,13 +38,13 @@ Scope {
     function refreshApplications() {
         applications = (DesktopEntries.applications.values || [])
             .filter(function(app) {
-                return app && !app.noDisplay && root.lower(app.name).length > 0;
+                return app && !app.noDisplay && launcherController.lower(app.name).length > 0;
             })
             .filter(function(app) {
-                return root.matchesQuery(app);
+                return launcherController.matchesQuery(app);
             })
             .sort(function(a, b) {
-                var scoreDiff = root.matchScore(b) - root.matchScore(a);
+                var scoreDiff = launcherController.matchScore(b) - launcherController.matchScore(a);
                 if (scoreDiff !== 0)
                     return scoreDiff;
 
@@ -149,7 +149,7 @@ Scope {
         target: DesktopEntries
 
         function onApplicationsChanged() {
-            root.refreshApplications();
+            launcherController.refreshApplications();
         }
     }
 
@@ -157,29 +157,29 @@ Scope {
         target: DesktopEntries.applications
 
         function onValuesChanged() {
-            root.refreshApplications();
+            launcherController.refreshApplications();
         }
     }
 
     IpcHandler {
         target: "launcher"
 
-        function show(): void { root.show(); }
-        function hide(): void { root.hide(); }
-        function toggle(): void { root.toggle(); }
+        function show(): void { launcherController.show(); }
+        function hide(): void { launcherController.hide(); }
+        function toggle(): void { launcherController.toggle(); }
     }
 
     PanelWindow {
-        id: launcher
+        id: launcherWindow
 
-        visible: root.launcherOpen
+        visible: launcherController.launcherOpen
         implicitWidth: Math.min(Math.max(720, screen.width * 0.34), screen.width - 48)
         implicitHeight: Math.min(560, screen.height - 96)
         color: "transparent"
-        WlrLayershell.keyboardFocus: root.launcherOpen ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
+        WlrLayershell.keyboardFocus: launcherController.launcherOpen ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
 
         BackgroundEffect.blurRegion: Region {
-            item: launcher.contentItem
+            item: launcherWindow.contentItem
             topRightRadius: 15
             topLeftRadius: 15
             bottomLeftRadius: 15
@@ -212,23 +212,23 @@ Scope {
                     rightPadding: 34
 
                     onTextChanged: {
-                        root.updateQuery(text);
+                        launcherController.updateQuery(text);
                     }
 
                     Keys.onPressed: function(event) {
                         if (event.key === Qt.Key_Down) {
-                            root.selectedIndex = Math.min(root.selectedIndex + 1, root.applications.length - 1);
-                            root.clampSelection();
+                            launcherController.selectedIndex = Math.min(launcherController.selectedIndex + 1, launcherController.applications.length - 1);
+                            launcherController.clampSelection();
                             event.accepted = true;
                         } else if (event.key === Qt.Key_Up) {
-                            root.selectedIndex = Math.max(root.selectedIndex - 1, 0);
-                            root.clampSelection();
+                            launcherController.selectedIndex = Math.max(launcherController.selectedIndex - 1, 0);
+                            launcherController.clampSelection();
                             event.accepted = true;
                         } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
-                            root.launchSelected();
+                            launcherController.launchSelected();
                             event.accepted = true;
                         } else if (event.key === Qt.Key_Escape) {
-                            root.hide();
+                            launcherController.hide();
                             event.accepted = true;
                         }
                     }
@@ -307,8 +307,8 @@ Scope {
                     Layout.fillHeight: true
                     clip: true
                     spacing: 4
-                    model: root.applications
-                    currentIndex: root.selectedIndex
+                    model: launcherController.applications
+                    currentIndex: launcherController.selectedIndex
                     boundsBehavior: Flickable.StopAtBounds
 
                     ScrollBar.vertical: ScrollBar {
@@ -324,14 +324,14 @@ Scope {
                         width: results.width
                         height: 62
                         hoverEnabled: true
-                        onEntered: root.selectedIndex = index
-                        onClicked: root.launchApp(modelData)
+                        onEntered: launcherController.selectedIndex = index
+                        onClicked: launcherController.launchApp(modelData)
 
                         Rectangle {
                             anchors.fill: parent
                             radius: 8
-                            color: index === root.selectedIndex ? "#2f6aa6ff" : rowMouse.containsMouse ? "#18ffffff" : "transparent"
-                            border.color: index === root.selectedIndex ? "#806aa6ff" : "transparent"
+                            color: index === launcherController.selectedIndex ? "#2f6aa6ff" : rowMouse.containsMouse ? "#18ffffff" : "transparent"
+                            border.color: index === launcherController.selectedIndex ? "#806aa6ff" : "transparent"
                             border.width: 1
 
                             RowLayout {
@@ -397,7 +397,7 @@ Scope {
 
                     Text {
                         anchors.centerIn: parent
-                        text: root.query.length > 0 ? "No matching applications" : "No applications found"
+                        text: launcherController.query.length > 0 ? "No matching applications" : "No applications found"
                         color: "#b8c0d8"
                         font.pixelSize: 15
                         visible: results.count === 0
