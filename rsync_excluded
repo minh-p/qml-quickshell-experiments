@@ -1,0 +1,13 @@
+#!/bin/sh
+
+if [ -z $1 ]; then
+    echo "Missing destination"
+    exit
+fi
+
+rsync -r --exclude "flake.nix" \
+    --exclude ".direnv/" \
+    --exclude "README.md" \
+    --exclude "flake.lock" \
+    --exclude "rsync_excluded" \
+    ./* $1
