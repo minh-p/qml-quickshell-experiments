@@ -1,4 +1,5 @@
 import Quickshell
+import Quickshell.Wayland
 import Quickshell.Io
 import QtQuick
 
@@ -8,6 +9,10 @@ Scope {
     Variants {
         model: Quickshell.screens;
         PanelWindow {
+            id: bar
+            color: "transparent"
+            BackgroundEffect.blurRegion: Region { item: bar.contentItem }
+            visible: true
             required property var modelData
             screen: modelData
             anchors {
