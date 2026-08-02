@@ -10,7 +10,7 @@ import Quickshell.Wayland
 Scope {
     id: launcherController
 
-    property bool launcherOpen: true
+    property bool launcherOpen: false
     property string query: ""
     property int selectedIndex: 0
     property var applications: []
