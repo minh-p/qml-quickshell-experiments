@@ -8,6 +8,7 @@ import "clock"
 import "battery"
 import "tray"
 import "volume"
+import "wifi"
 
 Scope {
     id: bar
@@ -27,10 +28,17 @@ Scope {
                 right: true
             }
             implicitHeight: 30
-
+	    
+	    WifiWidget {
+		id: wifiWidget
+		anchors.left: clockWidget.right
+		anchors.verticalCenter: parent.verticalCenter
+		anchors.leftMargin: 10
+	    }
+	  
 	    VolumeWidget {
 		id: volumeWidget
-		anchors.right: clockWidget.left
+		anchors.right: batteryWidget.left
 		anchors.verticalCenter: parent.verticalCenter
 		anchors.rightMargin: 10
 	    }
@@ -42,12 +50,13 @@ Scope {
 
 	    BatteryWidget {
 		id: batteryWidget
-		anchors.left: clockWidget.right
+		anchors.right: clockWidget.left
 		anchors.verticalCenter: parent.verticalCenter
-		anchors.leftMargin: 10
+		anchors.rightMargin: 10
 	    }
+	    
 	    SystemTray {
-		anchors.left: batteryWidget.right
+		anchors.left: wifiWidget.right
 		anchors.verticalCenter: parent.verticalCenter
 		anchors.leftMargin: 10
 	    }
