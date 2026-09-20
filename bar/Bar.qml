@@ -7,6 +7,7 @@ import QtQuick.Layouts
 import "clock"
 import "battery"
 import "tray"
+import "volume"
 
 Scope {
     id: bar
@@ -26,6 +27,14 @@ Scope {
                 right: true
             }
             implicitHeight: 30
+
+	    VolumeWidget {
+		id: volumeWidget
+		anchors.right: clockWidget.left
+		anchors.verticalCenter: parent.verticalCenter
+		anchors.rightMargin: 10
+	    }
+	    
 	    ClockWidget {
 		id: clockWidget
 		anchors.centerIn: parent
