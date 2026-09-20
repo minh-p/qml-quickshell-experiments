@@ -13,6 +13,10 @@ Text {
 	    return "Binding Default..."
         }
 
+	if (Pipewire.defaultAudioSink.audio.muted) {
+	    return "🔇"
+	}
+
 	return "🔊" + Math.round(Pipewire.defaultAudioSink.audio.volume * 100) + "%"
     }
     color: "white"
