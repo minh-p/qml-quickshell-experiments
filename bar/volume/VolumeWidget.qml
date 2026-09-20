@@ -1,4 +1,5 @@
 import QtQuick
+import Quickshell
 import Quickshell.Services.Pipewire
 
 Text {
@@ -26,12 +27,23 @@ Text {
 
     MouseArea {
 	anchors.fill: parent
-
-	onClicked: {
+	acceptedButtons: Qt.LeftButton | Qt.RightButton
+	
+	onClicked: (mouse) => {
 	    const sink = Pipewire.defaultAudioSink
-	    if (sink && sink.ready) {
-		sink.audio.muted = !sink.audio.muted
-	    }
+	    
+	    if (mouse.button === Qt.RightButton) {
+                Quickshell.execDetached(["pavucontrol"])
+                return
+            }
+	    
+	    if (mouse.button === Qt.LeftButton) {
+                const sink = Pipewire.defaultAudioSink
+
+                if (sink && sink.ready) {
+                    sink.audio.muted = !sink.audio.muted
+                }
+            }
 	}
 	
         onWheel: (wheel) => {
